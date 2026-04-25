@@ -1,0 +1,65 @@
+<mujoco model="simple_model">
+    <compiler angle="degree" meshdir="robots_meshes/"/>
+    <option gravity="0 0 -9.8" timestep="0.25" integrator="implicitfast"/>
+
+    <!-- 定义材质和网格 -->
+    <asset>
+        <mesh name="a_mesh" file="AA.stl" scale="0.002 0.002 0.002"/>
+        <mesh name="b_mesh" file="BB.stl" scale="0.002 0.002 0.002"/>
+        <mesh name="c_mesh" file="CC.stl" scale="0.002 0.002 0.002"/>
+        <mesh name="d_mesh" file="DD.stl" scale="0.002 0.002 0.002"/>
+        <mesh name="e_mesh" file="EE.stl" scale="0.002 0.002 0.002"/>
+        <mesh name="f_mesh" file="FF.stl" scale="0.002 0.002 0.002"/>
+        <mesh name="g_mesh" file="GG.stl" scale="0.002 0.002 0.002"/>
+    </asset>
+
+    <!-- 定义默认设置 -->
+    <default>
+        <joint armature="0" damping="40000." />
+        <position inheritrange="1"/>
+        <geom rgba="0.5 1 0.5 1" contype="1" conaffinity="1"/> <!-- 设置为淡绿色 -->
+    </default>
+
+    <!-- 世界坐标系 -->
+    <worldbody>
+        <!-- 基座（舵机） -->
+        <body name="base" pos="0 0 0">
+            <geom name="base_geom" type="mesh" mesh="a_mesh" mass="0.01"/>
+            <!-- 连接的链接 -->
+            <body name="link1" pos="0 0 0">
+                <joint name="joint1" type="hinge" axis="0 0 1" range="-100 100" pos="0 0 0"/>
+                <geom name="link1_geom" type="mesh" mesh="b_mesh" mass="0.01"/>
+                <body name="link2" pos="0 0 0">
+                    <joint name="joint2" type="hinge" axis="0 1 0" range="-100 100" pos="-0.02548 0 0.188"/>
+                    <geom name="link2_geom" type="mesh" mesh="c_mesh" pos="0 0 0" euler="0 0 0" mass="0.01"/>
+                    <body name="link3" pos="0 0 0">
+                        <joint name="joint3" type="hinge" axis="0 1 0" range="-100 100" pos="-0.02548 0 0.422"/>
+                        <geom name="link3_geom" type="mesh" mesh="d_mesh" pos="0 0 0" euler="0 0 0" mass="0.01"/>
+                        <body name="link4" pos="0 0 0">
+                            <joint name="joint4" type="hinge" axis="0 1 0" range="-100 100" pos="-0.02548 0 0.656"/>
+                            <geom name="link4_geom" type="mesh" mesh="e_mesh" pos="0 0 0" euler="0 0 0" mass="0.01"/>
+                            <body name="link5" pos="0 0 0">
+                                <joint name="joint5" type="hinge" axis="0 0 1" range="-180 180" pos="-0.02548 0.0018 0.792"/>
+                                <geom name="link5_geom" type="mesh" mesh="f_mesh" pos="0 0 0" euler="0 0 0" mass="0.01"  solimp="0.7 0.9 0.001" solref="0.02 1.0"/>
+                                <body name="link6" pos="0 0 0">
+                                    <joint name="joint6" type="hinge" axis="1 0 0" range="-50 90" pos="-0.02548 -0.02608 0.836"/>
+                                    <geom name="link6_geom" type="mesh" mesh="g_mesh" pos="0 0 0" euler="0 0 0" mass="0.01"  solimp="0.7 0.9 0.001" solref="0.02 1.0"/>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+    <!-- 添加执行器 -->
+    <actuator>
+        <position name="joint1_actuator" joint="joint1" kp="100000"/>
+        <position name="joint2_actuator" joint="joint2" kp="100000"/>
+        <position name="joint3_actuator" joint="joint3" kp="100000"/>
+        <position name="joint4_actuator" joint="joint4" kp="100000"/>
+        <position name="joint5_actuator" joint="joint5" kp="100000"/>
+        <position name="joint6_actuator" joint="joint6" kp="100000"/>
+    </actuator>
+</mujoco>

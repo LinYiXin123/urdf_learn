@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>机械臂数字孪生控制台</title>
+    <link rel="stylesheet" href="./dashboard.css" />
+  </head>
+  <body>
+    <div id="servoLimitAlert"></div>
+    <div id="jointLimitAlert"></div>
+    <div class="control-panel" id="controlPanel">
+      <div class="shell" id="dashboardShell">
+        <div class="top hud">
+          <div class="brand">
+            <div class="kicker">URDF / 真机数字孪生控制台</div>
+            <h1>六轴机械臂联动大屏</h1>
+            <p>中间 3D 模型固定展示，左右两侧手动翻页查看控制、状态、PID 参考与运行参数。</p>
+          </div>
+          <div class="navbox">
+            <div class="nav-utility-stack">
+              <div class="nav-utility-row">
+                <button id="toggleMotionRecording" class="record-button" type="button">开始录制动作</button>
+                <div id="motionRecordingState" class="mode-badge" data-state="idle">录制待机</div>
+              </div>
+              <div class="nav-utility-row">
+                <button id="toggleProjectMotionPlayback" class="playback-button" type="button">回放项目动作</button>
+                <div id="projectMotionPlaybackState" class="mode-badge" data-state="idle">回放待机</div>
+              </div>
+            </div>
+            <div class="page-nav">
+              <button id="dashboardPagePrev" class="page-arrow" type="button" aria-label="上一页">&#8249;</button>
+              <button class="page-tab active" data-dashboard-page-btn="0" type="button">控制总览</button>
+              <button class="page-tab" data-dashboard-page-btn="1" type="button">PID 参数</button>
+              <button id="dashboardPageNext" class="page-arrow" type="button" aria-label="下一页">&#8250;</button>
+            </div>
+            <div id="dashboardPageCaption" class="page-caption">第一页显示滑块控制、状态总览与实时诊断。</div>
+          </div>
+          <div class="actions">
+            <div class="command-stack">
+              <div class="command-row">
+                <button id="connectRealRobot" class="connect-button" type="button">连接真实机械臂</button>
+                <button id="restoreZeroPose" class="restore-button" type="button">同步缓慢恢复到 0° 姿态</button>
+                <button id="hideControls" class="hide-btn" type="button">隐藏</button>
+              </div>
+              <div class="command-row command-row-secondary">
+                <button id="toggleLeaderFollowerTeleop" class="teleop-button" type="button">连接主从遥操作</button>
+                <div id="leaderFollowerTeleopState" class="mode-badge" data-state="idle">主从待机</div>
+              </div>
+              <div id="restoreZeroPoseHint" class="restore-pose-hint">点击后会按角度比例同步恢复到既定 0° 姿态。</div>
+            </div>
+            <div class="status-cluster">
+              <div class="status-row">
+                <div id="dashboardConnectionState" class="state" data-state="idle">模拟器待机</div>
+                <div id="dashboardSyncStateBadge" class="stage-badge" data-state="idle">待机</div>
+              </div>
+              <div class="clock">
+                <span>北京时间</span>
+                <strong id="dashboardClock">--:--:--</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="main">
+          <div class="side side-left">
+            <div class="hud viewport">
+              <div id="dashboardLeftTrack" class="track">
+                <section class="screen screen-left-main">
+                  <div class="chead">
+                    <div class="kicker">主控页</div>
+                    <h2>六路实时控制</h2>
+                    <div class="sub">第一页聚焦姿态调节，滑块动作直接联动真机与中间模型。</div>
+                  </div>
+                  <div class="stack">
+                    <div class="card">
+                      <div class="hrow"><div class="section-title">舵机控制滑条</div><div class="chip active">6 路同步</div></div>
+                      <div id="servoSliderPanel" class="servo-slider-panel"></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="screen screen-left-parameter">
+                  <div class="chead">
+                    <div class="kicker">参数页</div>
+                    <h2>PID 参考与零位矩阵</h2>
+                    <div class="sub">第二页给出 PID 参考档和零位基准。当前为前端展示页，后续可扩展为真机参数写入。</div>
+                  </div>
+                  <div class="pstack">
+                    <div class="card">
+                      <div class="diagnostic-head"><div class="section-title">PID 参考档位</div><span class="mini">仅作调参与布局展示</span></div>
+                      <div id="pidReferencePanel" class="pid-table"></div>
+                    </div>
+                    <div class="card">
+                      <div class="diagnostic-head"><div class="section-title">零位 / 当前原始值</div><span class="mini">实时跟随当前姿态</span></div>
+                      <div id="servoReferencePanel" class="reference-table"></div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <div id="leftStageResizer" class="splitter splitter-vertical" title="拖动调整左侧面板宽度"></div>
+
+          <div class="stage">
+            <div class="center">
+              <div class="surface">
+                <div class="center-header">
+                  <div><div class="kicker">模型联动核心区</div><div class="title">实时 3D 姿态映射</div></div>
+                  <div class="status-row"><div id="dashboardPageLabel" class="chip active">控制总览</div></div>
+                </div>
+                <div class="center-grid"></div><div class="center-beam"></div><div class="center-ring"></div><div class="center-ring2"></div><div class="center-orbit a"></div><div class="center-orbit b"></div><div class="center-orbit c"></div><div class="center-core"></div><div class="center-scan"></div><div class="center-node n1"></div><div class="center-node n2"></div><div class="center-node n3"></div><div class="center-node n4"></div>
+                <div class="center-tags"><div class="center-tag a">URDF 模型</div><div class="center-tag b">真机角度反馈</div><div class="center-tag c">固定零位基准</div><div class="center-tag d">同步回零轨迹</div></div>
+                <div class="center-caption">中间区域始终保持 3D 模型不翻页，你在左右切换控制页或参数页时，这里都会持续显示当前真实姿态和模拟器联动效果。</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="stageRightResizer" class="splitter splitter-vertical" title="拖动调整右侧面板宽度"></div>
+
+          <div class="side side-right">
+            <div class="hud viewport">
+              <div id="dashboardRightTrack" class="track">
+                <section class="screen screen-right-main">
+                  <div class="chead">
+                    <div class="kicker">总览页</div>
+                    <h2>状态与联动诊断</h2>
+                    <div class="sub">第一页把连接状态、调速、按键提示和六轴状态集中到一处。</div>
+                  </div>
+                  <div class="pstack">
+                    <div class="card">
+                      <div class="hrow"><div class="section-title">联动概览</div><div id="dashboardSyncState" class="chip idle">待机</div></div>
+                      <div class="metrics">
+                        <div class="m"><span>在线舵机</span><strong id="dashboardOnlineCount" class="metric-strong">0 / 6</strong></div>
+                        <div class="m"><span>告警数量</span><strong id="dashboardAlertCount" class="metric-strong">0</strong></div>
+                        <div class="m"><span>当前页面</span><strong id="dashboardPageText" class="metric-strong">控制总览</strong></div>
+                      </div>
+                    </div>
+                    <div id="keyboardControlSection" class="card">
+                      <div class="hrow"><div class="section-title">键盘与调速</div><div class="chip idle">微调</div></div>
+                      <div class="speed-box">
+                        <div class="mini">键盘微调步长</div>
+                        <label for="speedControl">按一次键时每次调整的角度</label>
+                        <div class="speed-slider"><input type="range" id="speedControl" min="0.1" max="1" step="0.1" value="0.8" /><span id="speedValue" class="speed-value">0.8</span></div>
+                        <div class="connect-help" style="margin-top:8px">连接前请先关闭占用串口的工具，连接成功后即可实时控制真机。</div>
+                        <div class="keyboard-grid">
+                          <div class="key-hint">腰部 1 / Q</div><div class="key-hint">大臂 2 / W</div><div class="key-hint">小臂 3 / E</div><div class="key-hint">腕部4 4 / R</div><div class="key-hint">腕部5 5 / T</div><div class="key-hint">爪子 6 / Y</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="servoStatusContainer" class="card">
+                      <div class="hrow"><div class="section-title">六轴状态监测</div><div class="chip active">6 → 1 排序</div></div>
+                      <div class="servo-status-grid compact-status">
+                        <div class="servo-status-row"><div class="servo-name">爪子</div><div class="servo-status-spacer">6号舵机</div><div id="servo-6-status" class="servo-status">未连接</div><div id="servo-6-error" class="servo-error"></div></div>
+                        <div class="servo-status-row"><div class="servo-name">腕部</div><div class="servo-status-spacer">5号舵机</div><div id="servo-5-status" class="servo-status">未连接</div><div id="servo-5-error" class="servo-error"></div></div>
+                        <div class="servo-status-row"><div class="servo-name">腕部</div><div class="servo-status-spacer">4号舵机</div><div id="servo-4-status" class="servo-status">未连接</div><div id="servo-4-error" class="servo-error"></div></div>
+                        <div class="servo-status-row"><div class="servo-name">小臂</div><div class="servo-status-spacer">3号舵机</div><div id="servo-3-status" class="servo-status">未连接</div><div id="servo-3-error" class="servo-error"></div></div>
+                        <div class="servo-status-row"><div class="servo-name">大臂</div><div class="servo-status-spacer">2号舵机</div><div id="servo-2-status" class="servo-status">未连接</div><div id="servo-2-error" class="servo-error"></div></div>
+                        <div class="servo-status-row"><div class="servo-name">腰部</div><div class="servo-status-spacer">1号舵机</div><div id="servo-1-status" class="servo-status">未连接</div><div id="servo-1-error" class="servo-error"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="screen screen-right-parameter">
+                  <div class="chead">
+                    <div class="kicker">参数页</div>
+                    <h2>运行参数与保护视图</h2>
+                    <div class="sub">这一页专门看偏差、零位幅度、保护策略和实时风险条形图。</div>
+                  </div>
+                  <div class="pstack">
+                    <div class="card">
+                      <div class="hrow"><div class="section-title">姿态运行指标</div><div class="chip warning">参数页</div></div>
+                      <div class="metrics two">
+                        <div class="m"><span>最大偏差</span><strong id="dashboardMaxDeviation" class="metric-strong">0.0°</strong></div>
+                        <div class="m"><span>平均偏差</span><strong id="dashboardAvgDeviation" class="metric-strong">0.0°</strong></div>
+                        <div class="m"><span>偏差最大关节</span><strong id="dashboardDominantServo" class="metric-strong">腰部</strong></div>
+                        <div class="m"><span>离开零位数量</span><strong id="dashboardMovingCount" class="metric-strong">0</strong></div>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="hrow"><div class="section-title">控制参数概览</div><div class="chip active">固定基准</div></div>
+                      <div class="params">
+                        <div class="param"><span>串口波特率</span><strong>1000000</strong></div><div class="param"><span>实时轮询周期</span><strong>120 ms</strong></div><div class="param"><span>零位策略</span><strong>固定零位校准</strong></div><div class="param"><span>恢复逻辑</span><strong>按比例同步到位</strong></div>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="diagnostic-head"><div class="section-title">六轴偏差热度</div><span id="dashboardDiagnosticSummary" class="mini">当前所有关节接近零位</span></div>
+                      <div id="servoDiagnosticsPanel" class="diagnostic-stack"></div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="mainBottomResizer" class="splitter splitter-horizontal" title="拖动调整底部面板高度"></div>
+
+        <div class="bottom hud" id="dashboardBottom">
+          <div class="bottom-head">
+            <div><div class="kicker">实时角度总览</div><div class="bt">六轴数字化姿态监测</div></div>
+            <div class="binline">
+              <div class="ibox"><span>当前页</span><strong id="dashboardBottomPageLabel">控制总览</strong></div>
+              <div class="ibox"><span>同步状态</span><strong id="dashboardBottomSyncState">待机</strong></div>
+              <div class="ibox"><span>连接状态</span><strong id="dashboardBottomConnectionState">模拟器待机</strong></div>
+              <div class="ibox"><span>姿态提示</span><strong id="dashboardPoseState">模拟器已准备，可先在中间 3D 模型区观察姿态变化。</strong></div>
+            </div>
+          </div>
+          <div class="bgrid">
+            <div id="servoTelemetryBoard" class="servo-telemetry-board"></div>
+            <div class="notes">
+              <div class="note"><strong>翻页说明</strong><div class="bottom-caption">点击顶部“控制总览 / PID 参数”页签即可切换左右面板，中间 3D 模型不会变化。</div></div>
+              <div class="note"><strong>当前操作建议</strong><div id="dashboardActionSuggestion" class="bottom-caption">先连接真机，再观察状态面板和底部六轴角度是否实时同步。</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="toggle-panel" id="togglePanel" type="button">打开大屏</button>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>

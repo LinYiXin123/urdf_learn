@@ -1,0 +1,33 @@
+.git/
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / frontend
+node_modules/
+dist/
+
+# Local outputs and caches
+output/
+outputs/
+tmp/
+.cache/
+.codex_tmp/
+camera_id_images/
+playground/public/motions/
+.embedded_git_backups/
+
+# Logs
+*.log
+*.err.log
+
+# Platform leftovers
+归档/__MACOSX/

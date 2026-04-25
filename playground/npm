@@ -1,0 +1,7 @@
+Start-Process : 由于出现以下错误，无法运行此命令: 系统找不到指定的文件。。
+所在位置 行:1 字符: 1
++ Start-Process -Filepath 'C:\Users\corey\OneDrive\Documents\workspace\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [Start-Process]，InvalidOperationException
+    + FullyQualifiedErrorId : InvalidOperationException,Microsoft.PowerShell.Commands.StartProcessCommand
+ 

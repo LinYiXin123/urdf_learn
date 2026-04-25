@@ -1,0 +1,9 @@
+# requirements.txt
+
+mujoco==3.2.6
+pyserial==3.5
+numpy==2.0.2
+PyQt5==5.15.9
+pyqt5-tools==5.15.9.3.3
+pyyaml==6.0.2
+feetech-servo-sdk==1.0.0
