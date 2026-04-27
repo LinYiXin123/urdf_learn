@@ -1,37 +1,71 @@
 # urdf_learn
 
-一个面向 `URDF / 机械臂 / 具身智能 / 真机控制 / 语音交互` 的综合学习与实验工作区。
+![urdf_learn 封面](docs/assets/readme-cover.png)
 
-这个仓库不是单一模块，而是把文档、机械臂控制代码、网页可视化、语音控制工具和若干辅助脚本放在了一起，方便集中迭代和联调。
+一个围绕 `URDF / 机械臂 / 具身智能 / 真机控制 / 语音交互` 搭建的综合学习与实验工作区。
 
-## 仓库结构
+这个仓库不是单一 demo，而是把文档、网页控制面板、语音工具、机械臂训练与遥操作代码、辅助脚本都集中到了同一个 workspace 里，适合做持续迭代、联调和记录沉淀。
 
-- [docs](./docs)
-  采购、装配、接线、采集流程和执行说明等文档资料。
-- [genkiarm](./genkiarm)
-  基于 ALOHA / LeRobot 思路整理和改造的低成本具身机械臂代码与配置。
-- [playground](./playground)
-  浏览器端机械臂可视化与 Web Serial 真机控制面板。
-- [gongneng](./gongneng)
-  语音转文字、实时语音指令、语音桥接执行等终端工具。
-- [scripts](./scripts)
-  BOM 生成、执行方案生成、舵机角度读取等辅助脚本。
-- [归档](./归档)
-  部分历史 STL 模型与归档文件。
+## 你可以把它理解成什么
+
+- 一个机械臂学习工作台
+- 一个真机控制 + 网页可视化实验场
+- 一个语音指令驱动机械臂的入口
+- 一个 LeRobot / ALOHA 思路下的低成本具身智能实践仓库
+
+## 效果预览
+
+### 浏览器端机械臂面板
+
+![机械臂面板](docs/assets/playground-dashboard.png)
+
+### 硬件与项目概览
+
+![硬件概览](docs/assets/hardware-overview.png)
+
+### 工作区模块关系
+
+```mermaid
+flowchart LR
+    A["docs 文档区"] --> B["playground 网页可视化与 Web Serial 控制"]
+    A --> C["genkiarm 遥操作 / 训练 / 配置"]
+    A --> D["gongneng 语音输入与桥接控制"]
+    D --> B
+    E["scripts 辅助脚本"] --> A
+    E --> C
+```
+
+## 仓库里有什么
+
+| 目录 | 作用 |
+| --- | --- |
+| `docs/` | 采购、装配、接线、采集流程、执行说明等项目文档 |
+| `playground/` | 浏览器端 URDF 可视化、Web Serial 真机控制与桥接执行面板 |
+| `gongneng/` | 语音转文字、实时语音控制、桥接输出等工具 |
+| `genkiarm/` | 基于 ALOHA / LeRobot 思路整理的低成本机械臂代码与配置 |
+| `scripts/` | BOM 生成、执行方案、舵机角度读取等辅助脚本 |
+| `归档/` | 历史 STL 模型与阶段性归档文件 |
 
 ## 主要能力
 
-- 机械臂 URDF / 网页可视化调试
-- 浏览器端 Web Serial 真机控制
-- 语音转写与机械臂语音命令桥接
-- 低成本具身机械臂训练与遥操作实验
-- 装配、接线、采集流程等项目文档沉淀
+- 机械臂 URDF 网页可视化
+- 浏览器端真机连接与控制
+- 语音识别到机械臂动作桥接
+- 低成本具身机械臂遥操作与训练实验
+- 文档、接线、采集流程与执行方案沉淀
+
+## 推荐阅读顺序
+
+如果你第一次进入这个仓库，建议按下面顺序看:
+
+1. 先看 `docs/`，了解硬件方案、接线和整体目标
+2. 再看 `playground/`，最快看到可交互的效果
+3. 再看 `gongneng/`，理解语音输入和桥接执行链路
+4. 最后看 `genkiarm/`，深入到 LeRobot、遥操作和训练代码
 
 ## 快速开始
 
-### 1. 浏览器控制面板
-
-如果你想先看机械臂网页控制与可视化：
+### 1. 先跑浏览器控制面板
 
 ```powershell
 cd playground
@@ -39,48 +73,99 @@ npm install
 npm run dev
 ```
 
-然后在浏览器中打开本地开发地址。
+说明:
 
-说明：
-
-- `playground` 支持虚拟机械臂显示
+- `playground` 基于 `Vite + three.js + urdf-loader`
+- 支持虚拟机械臂显示
 - 支持通过 `Web Serial API` 连接真实机械臂
-- 可以和 `gongneng` 目录下生成的 `robot_command_bridge.jsonl` 做桥接联动
+- 可以监听 `robot_command_bridge.jsonl` 来接收语音模块输出的动作命令
 
-### 2. 语音终端工具
+建议使用较新的 Node.js 版本运行，优先 `Node.js 18+`。
 
-如果你想体验语音输入或语音控制链路：
+### 2. 体验语音工具
 
 ```powershell
 python -m pip install -r gongneng\requirements.txt
 python gongneng\voice_to_text_terminal.py
 ```
 
-实时语音版：
+实时语音版:
 
 ```powershell
 python gongneng\realtime_voice_command_terminal.py
 ```
 
-### 3. GenkiArm / LeRobot 相关代码
+它们适合两类场景:
 
-如果你想看训练、遥操作和机器人配置，优先从下面几个位置开始：
+- `voice_to_text_terminal.py`: 录一段再整体转文字
+- `realtime_voice_command_terminal.py`: 边说边出字，并写出桥接动作文件
 
-- [genkiarm/README.md](./genkiarm/README.md)
-- [genkiarm/lerobot/configs](./genkiarm/lerobot/configs)
-- [genkiarm/lerobot/scripts](./genkiarm/lerobot/scripts)
+### 3. 查看 GenkiArm / LeRobot 路线
 
-## 推荐阅读顺序
+如果你想继续深入到具身训练与遥操作，可以从 `genkiarm` 开始。
 
-如果你是第一次看这个仓库，推荐按这个顺序：
+推荐先看:
 
-1. 先看 [docs](./docs) 了解硬件、接线、采集和执行背景
-2. 再看 [playground](./playground) 了解网页控制和可视化
-3. 再看 [gongneng](./gongneng) 了解语音输入与桥接控制
-4. 最后看 [genkiarm](./genkiarm) 进入训练、配置和真机控制代码
+- `genkiarm/README.md`
+- `genkiarm/lerobot/configs`
+- `genkiarm/lerobot/scripts`
+
+根据当前仓库说明，典型环境准备方式是:
+
+```powershell
+conda create -y -n jszn python=3.10
+conda activate jszn
+cd genkiarm\lerobot
+pip install -e .
+pip install -r requirements.txt
+pip install pyserial
+```
+
+测试遥操作示例:
+
+```powershell
+python lerobot/scripts/control_robot.py teleoperate --robot-path lerobot/configs/robot/so100.yaml --robot-overrides "~cameras" --display-cameras 0
+```
+
+## 语音到真机执行链路
+
+`gongneng/` 目录已经把这条链路做成了可拆分组合的形式:
+
+1. 麦克风采集
+2. 实时或整段语音转写
+3. 规则或 AI 指令理解
+4. 输出 `robot_command_bridge.jsonl`
+5. `playground` 监听桥接文件并执行动作
+
+这意味着你既可以单独测试语音模块，也可以和网页控制面板联动起来。
+
+## 项目结构
+
+```text
+urdf_learn/
+├─ docs/                    硬件、接线、执行与采集文档
+├─ genkiarm/                具身机械臂代码、LeRobot 配置与脚本
+├─ gongneng/                语音转写、实时语音、桥接控制工具
+├─ playground/              网页可视化与 Web Serial 控制面板
+├─ scripts/                 各类辅助脚本
+├─ docs/assets/             README 展示图
+└─ 归档/                    历史模型与归档文件
+```
+
+## 适合什么人
+
+- 想学 URDF 和机械臂可视化的人
+- 想把浏览器控制和真机连接串起来的人
+- 想做语音控制机械臂入口原型的人
+- 想尝试低成本具身智能 / LeRobot 实验的人
+
+## 使用提示
+
+- `Web Serial API` 通常更适合 Chromium 内核浏览器
+- 真机控制前请先确认舵机零位、供电和动作范围
+- 语音模块如果走在线转写，需要提前配置 `OPENAI_API_KEY`
+- 如果你只想快速看效果，优先从 `playground` 开始最直观
 
 ## 说明
 
-- 这个仓库已经排除了 `.venv`、`node_modules`、日志、缓存、临时输出等本地生成内容
-- `genkiarm` 在当前仓库中按普通目录纳入管理，便于一次性克隆完整内容
-- 如果你只关心某个子方向，可以直接从对应子目录开始阅读
+这个仓库更像一个“长期实验工作区”，不是单页式 demo。它的价值在于把文档、控制链路、语音入口和训练路线放在一起，便于你持续扩展。
